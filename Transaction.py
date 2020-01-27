@@ -1,4 +1,5 @@
 import datetime
+import Helpers
 
 class Transaction:
     def __init__(self, person, document):
@@ -12,3 +13,8 @@ class Transaction:
             "document": self.document,
             "timestamp": self.timestamp.isoformat()
         }
+    def from_json(json_obj):
+        self.person = json_obj["person"]
+        self.document = json_obj["document"]
+        self.timestamp = Helpers.datetime_from_iso(json_obj["timestamp"])
+        return self
