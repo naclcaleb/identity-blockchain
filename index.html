@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>Identity Blockchain</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+        <style>
+            body {
+                padding: 1em;
+                text-align: center;
+            }
+
+            form {
+                width: 50%;
+                text-align: left;
+                margin: auto;
+            }
+
+            #file {
+                display:none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Upload a Document</h1>
+        <form id="upload" onsubmit="onUpload">
+            <div class='form-group'>
+                <label>Name</label>
+                <input class='form-control' type="text" name="identity_token" id='uploadIdentity' placeholder="Name">
+            </div>
+            <div class='form-group'>
+                <label for='file' class='btn btn-primary'>Choose File (Must be JPG)</label>
+                <input class='form-control' type="file" id="file" name="file">
+            </div>
+            <div class='form-group'>
+                <button class='btn btn-primary'>Submit</button>
+            </div>
+        </form>
+
+        <h1>Retrieve a Document</h1>
+        <form id="retrieve">
+            <div class='form-group'>
+                <label>Name</label>
+                <input class='form-control' id="retrieveIdentity" type="text" name="identity_token" placeholder="Name">
+            </div>
+            <div class='form-group'>
+                <label>Document ID</label>
+                <input class='form-control' id="documentId" type="text" name="document_id" placeholder="Document ID">
+            </div>
+            <div class='form-group'>
+                <input class='btn btn-primary' type="submit">
+            </div>
+        </form>
+
+        <h1>Your Documents:</h1>
+        <div id='documents'>
+
+        </div>
+
+        <script src='https://code.jquery.com/jquery.min.js'></script>
+        <script>
+            var uploadForm = document.getElementById('upload');
+            const retrieveForm = document.getElementById('retrieve');
+            const documents = document.getElementById('documents');
+
+            console.log(uploadForm);
+            console.log(retrieveForm);
+
+            $("#upload").submit(onUpload)
+            $("#retrieve").submit(onRecieve)
+
+            function loadDocuments() {
+                documents.innerHTML = '';
+
+                const ids = JSON.parse(localStorage.getItem('documents')) || [];
+                for (var i = 0; i < ids.length; i++) {
+                    const h3 = document.createElement('h3');
+                    h3.innerHTML = ids[i];
+                    documents.appendChild(h3);
+                }
+            }
+
+            loadDocuments();
+
+            uploadForm.addEventListener('submit', onUpload);
+
+            function onUpload(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                var data = new FormData(uploadForm);
+
+                var file = document.getElementById('file').files[0];
+
+                var identity_token = document.getElementById('uploadIdentity').value;
+                console.log(data);
+
+                $.ajax({
+                    url: './document/upload',
+                    method: 'POST',
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(res) {
+                        console.log(JSON.parse(res));
+                        const result = JSON.parse(res);
+                        
+                        if (result.status !== 1) {
+                            alert("An error occurred");
+                        } else {
+
+                            const currentDocuments = JSON.parse(localStorage.getItem('documents')) || [];
+                            currentDocuments.push(result.document_id);
+                            localStorage.setItem('documents', JSON.stringify(currentDocuments));
+                            loadDocuments();
+
+                        }
+                    }
+                });
+
+                return false;
+
+            }
+            
+            function onRecieve(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                var idtoken = $("#retrieveIdentity").val()
+                var documentId = $("#documentId").val()
+
+                var url = "./document/retrieve?document_id=" + documentId + "&identity_token=" + idtoken 
+
+                const newEl = document.createElement('img');
+                newEl.src = url;
+                newEl.width = "100"
+                document.body.appendChild(newEl);
+            }
+       
+        </script>
+    </body>
+</html>

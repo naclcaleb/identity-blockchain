@@ -38,7 +38,7 @@ class Block:
     def to_json(self):
         block_dict_summary = {
             "index": self.index,
-            "previous_hash": self.previous_hash,
+            "previous_hash": str(self.previous_hash),
             "transactions": self.export_transactions(),
             "timestamp": self.timestamp.isoformat(),
             "proof": self.proof
@@ -58,5 +58,5 @@ class Block:
 
     def hash(self):
         block_str = self.to_hashable_string()
-        return hashlib.sha256(block_str).hexdigest()
+        return hashlib.sha256(block_str.encode('utf-8')).hexdigest()
         

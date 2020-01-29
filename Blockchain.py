@@ -34,14 +34,14 @@ class Blockchain:
         self.transaction_queue.append(new_transaction)
 
     def is_valid_proof(self, previous_proof, num):
-        guess = "{}{}".format(previous_proof, num).encode()
+        guess = "{}{}".format(previous_proof, num).encode('utf-8')
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         return guess_hash[:self.proof_difficulty] == "0" * self.proof_difficulty
 
 
     def prove(self):
-        last_block = chain[-1]
+        last_block = self.chain[-1]
         last_proof = last_block.proof
 
         num = 0
@@ -52,7 +52,7 @@ class Blockchain:
 
     def full_chain_str(self):
         chain_list = [block.to_json() for block in self.chain]
-
+        print(chain_list)
         return json.dumps({
             "chain": chain_list,
             "length": len(self.chain)
